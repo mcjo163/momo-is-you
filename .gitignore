@@ -103,6 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-
-# PyCharm Documentation
+# PyCharm metadata
 .idea
+
+# VS Code metadata
+.vscode/
