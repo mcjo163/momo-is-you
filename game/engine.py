@@ -23,7 +23,5 @@ class Level:
         self.width = len(board[0])
 
     def process_input(self, key):
+        print(key)
         pass
-
-    def get_board(self):
-        return self.board
