@@ -9,6 +9,8 @@ from entities import Entities
 
 # UI-Related Constants
 STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT = 800, 600    # starting dimensions of screen (px)
+MIN_SCREEN_WIDTH = 160
+MIN_SCREEN_HEIGHT = 120
 VIEWPORT_MIN_BUFFER = 50                                    # minimum viewport edge buffer (px)
 
 SCREEN_BACKGROUND_COLOR = (30, 30, 30)
@@ -51,7 +53,7 @@ def draw_level_onto_viewport(viewport, level):
 
     board = level.board
     tile_size_px = min(viewport.get_width() // level.width, viewport.get_height() // level.height)
-    print("tile_size_px:\t" + str(tile_size_px))
+    # print("tile_size_px:\t" + str(tile_size_px))
 
     for y in range(level.height):
         for x in range(level.width):
@@ -117,9 +119,11 @@ def play_level(level):
                     process_keypress(level, event.key)
                     update_screen(screen, level, viewport_rect)
             elif event.type == pygame.VIDEORESIZE:
-                screen = get_initialized_screen(event.w, event.h)
+                new_screen_width = max(event.w, MIN_SCREEN_WIDTH)
+                new_screen_height = max(event.h, MIN_SCREEN_HEIGHT)
+                screen = get_initialized_screen(new_screen_width, new_screen_height)
                 pygame.display.update()
-                viewport_rect = get_viewport_rect(event.w, event.h, level.width, level.height)
+                viewport_rect = get_viewport_rect(new_screen_width, new_screen_height, level.width, level.height)
                 update_screen(screen, level, viewport_rect)
 
 
