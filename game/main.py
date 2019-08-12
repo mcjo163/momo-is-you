@@ -8,8 +8,8 @@ from levels import *
 from entities import Entities
 
 # UI-Related Constants
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600      # dimensions of screen (px)
-VIEWPORT_MIN_BUFFER = 50                    # minimum viewport edge buffer (px)
+STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT = 800, 600    # starting dimensions of screen (px)
+VIEWPORT_MIN_BUFFER = 50                                    # minimum viewport edge buffer (px)
 
 SCREEN_BACKGROUND_COLOR = (30, 30, 30)
 VIEWPORT_BACKGROUND_COLOR = (100, 100, 100)
@@ -71,23 +71,34 @@ def update_screen(screen, level, viewport_rect):
     pygame.display.update(viewport_rect)
 
 
-def play_level(level):
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    # size the viewport to both preserve level.board's aspect ratio and respect VIEWPORT_MIN_BUFFER
-    width_ratio = (SCREEN_WIDTH - VIEWPORT_MIN_BUFFER * 2) // level.width
-    height_ratio = (SCREEN_HEIGHT - VIEWPORT_MIN_BUFFER * 2) // level.height
+# Size the viewport to both preserve level.board's aspect ratio and respect VIEWPORT_MIN_BUFFER
+def get_viewport_rect(screen_width_px, screen_height_px, level_width_tiles, level_height_tiles):
+    width_ratio = (screen_width_px - VIEWPORT_MIN_BUFFER * 2) // level_width_tiles
+    height_ratio = (screen_height_px - VIEWPORT_MIN_BUFFER * 2) // level_height_tiles
     pixels_per_tile = min(width_ratio, height_ratio)
-    viewport_width = level.width * pixels_per_tile
-    viewport_height = level.height * pixels_per_tile
-    viewport_rect = pygame.Rect(
-        ((SCREEN_WIDTH - viewport_width) // 2, (SCREEN_HEIGHT - viewport_height) // 2),
+
+    viewport_width = level_width_tiles * pixels_per_tile
+    viewport_height = level_height_tiles * pixels_per_tile
+
+    return pygame.Rect(
+        ((screen_width_px - viewport_width) // 2, (screen_height_px - viewport_height) // 2),     # centered in screen
         (viewport_width, viewport_height)
     )
 
-    # initialize screen contents
-    screen.fill(SCREEN_BACKGROUND_COLOR)
+
+def get_initialized_screen(screen_width_px, screen_height_px):
+    new_screen = pygame.display.set_mode((screen_width_px, screen_height_px), pygame.RESIZABLE)
+    new_screen.fill(SCREEN_BACKGROUND_COLOR)
+    return new_screen
+
+
+def play_level(level):
+    # initialize screen
+    screen = get_initialized_screen(STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT)
     pygame.display.update()
+
+    # initialize viewport
+    viewport_rect = get_viewport_rect(STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT, level.width, level.height)
     update_screen(screen, level, viewport_rect)
 
     # main game loop
@@ -105,6 +116,11 @@ def play_level(level):
                 else:
                     process_keypress(level, event.key)
                     update_screen(screen, level, viewport_rect)
+            elif event.type == pygame.VIDEORESIZE:
+                screen = get_initialized_screen(event.w, event.h)
+                pygame.display.update()
+                viewport_rect = get_viewport_rect(event.w, event.h, level.width, level.height)
+                update_screen(screen, level, viewport_rect)
 
 
 if __name__ == "__main__":
