@@ -8,13 +8,11 @@ from levels import *
 from entities import Entities
 
 # UI-Related Constants
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600                  # dimensions of screen in px
-VIEWPORT_BUFFER_HOR, VIEWPORT_BUFFER_VERT = 50, 50      # level contents viewport edge buffers
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600      # dimensions of screen (px)
+VIEWPORT_MIN_BUFFER = 50                    # minimum viewport edge buffer (px)
 
-viewport_rect = pygame.Rect(
-    (VIEWPORT_BUFFER_HOR, VIEWPORT_BUFFER_VERT),
-    (SCREEN_WIDTH - VIEWPORT_BUFFER_HOR * 2, SCREEN_HEIGHT - VIEWPORT_BUFFER_VERT * 2)
-)
+SCREEN_BACKGROUND_COLOR = (30, 30, 30)
+VIEWPORT_BACKGROUND_COLOR = (100, 100, 100)
 
 key_map = {
     pygame.K_UP: Level.UP,
@@ -28,7 +26,7 @@ entity_map = {
     Entities.MOMO: {
         "color": (255, 0, 0),       # TEMPORARY
         "src_image": None,
-        "draw_precedence": 1
+        "draw_precedence": 2
     },
     Entities.WALL: {
         "color": (0, 255, 255),     # TEMPORARY
@@ -38,7 +36,7 @@ entity_map = {
     Entities.FLAG: {
         "color": (255, 255, 0),     # TEMPORARY
         "src_image": None,
-        "draw_precedence": 0
+        "draw_precedence": 1
     }
 }
 
@@ -47,9 +45,12 @@ def process_keypress(level, key):
     level.process_input(key_map[key])
 
 
-def draw_level(screen, level):
+# Assumes given viewport surface has same exact aspect ratio as level.board (only draws squares)
+def draw_level_onto_viewport(viewport, level):
+    viewport.fill(VIEWPORT_BACKGROUND_COLOR)
+
     board = level.board
-    tile_size_px = min(viewport_rect.width // level.width, viewport_rect.height // level.height)
+    tile_size_px = min(viewport.get_width() // level.width, viewport.get_height() // level.height)
     print("tile_size_px:\t" + str(tile_size_px))
 
     for y in range(level.height):
@@ -58,18 +59,38 @@ def draw_level(screen, level):
             tile_contents.sort(key=lambda e: entity_map[e]["draw_precedence"])
             for entity in tile_contents:
                 img = pygame.Surface((tile_size_px, tile_size_px)) # entity_map[entity]["image"]
-                img.fill(entity_map[entity]["color"])
-                loc_px = (viewport_rect.left + x * tile_size_px, viewport_rect.top + y * tile_size_px)
-                screen.blit(img, loc_px)
+                img.fill(entity_map[entity]["color"])       # TEMPORARY
+                loc_px = (tile_size_px * x, tile_size_px * y)
+                viewport.blit(img, loc_px)
 
-    pygame.display.update()
+
+def update_screen(screen, level, viewport_rect):
+    viewport = pygame.Surface((viewport_rect.width, viewport_rect.height))
+    draw_level_onto_viewport(viewport, level)
+    screen.blit(viewport, viewport_rect)
+    pygame.display.update(viewport_rect)
 
 
 def play_level(level):
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    draw_level(screen, level)
+    # size the viewport to both preserve level.board's aspect ratio and respect VIEWPORT_MIN_BUFFER
+    width_ratio = (SCREEN_WIDTH - VIEWPORT_MIN_BUFFER * 2) // level.width
+    height_ratio = (SCREEN_HEIGHT - VIEWPORT_MIN_BUFFER * 2) // level.height
+    pixels_per_tile = min(width_ratio, height_ratio)
+    viewport_width = level.width * pixels_per_tile
+    viewport_height = level.height * pixels_per_tile
+    viewport_rect = pygame.Rect(
+        ((SCREEN_WIDTH - viewport_width) // 2, (SCREEN_HEIGHT - viewport_height) // 2),
+        (viewport_width, viewport_height)
+    )
 
+    # initialize screen contents
+    screen.fill(SCREEN_BACKGROUND_COLOR)
+    pygame.display.update()
+    update_screen(screen, level, viewport_rect)
+
+    # main game loop
     clock = pygame.time.Clock()
     level_alive = True
     while level_alive:
@@ -83,9 +104,9 @@ def play_level(level):
                     pass  # TODO: restart level
                 else:
                     process_keypress(level, event.key)
-                    draw_level(screen, level)
+                    update_screen(screen, level, viewport_rect)
 
 
 if __name__ == "__main__":
-    test_level = Level(test_level_start)
+    test_level = Level(test_level_2_start)
     play_level(test_level)
