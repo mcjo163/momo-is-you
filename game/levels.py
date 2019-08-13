@@ -1,16 +1,21 @@
 # Level board starting states
 # TODO: read these layouts from external files
 
-from entities import Entities
+from game.entities import *
 
-M = Entities.MOMO
-W = Entities.WALL
-R = Entities.ROCK
-F = Entities.FLAG
+M = Objects.MOMO
+W = Objects.WALL
+R = Objects.ROCK
+F = Objects.FLAG
+
+IS = Verbs.IS
+
+Y = Adjectives.YOU
 
 test_level_start = [
-    [[], [], [], [], [], [], [], [], [], [], []],
-    [[], [], [], [], [], [W], [], [], [], [], []],
+    [[Nouns.MOMO], [IS], [Y], [], [], [], [], [], [], [], []],
+    [[IS], [], [], [], [], [], [], [], [], [], []],
+    [[Y], [], [], [], [], [W], [], [], [], [], []],
     [[], [], [], [], [], [W], [], [], [], [], []],
     [[], [], [M], [], [], [W], [], [], [F], [], []],
     [[], [], [], [], [], [W], [], [], [], [], []],
