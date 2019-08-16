@@ -1,6 +1,6 @@
 # Game engine
 
-from game.entities import *
+from entities import *
 
 
 # Fully encapsulated Level object handles all game logic

@@ -1,7 +1,7 @@
 # Level board starting states
 # TODO: read these layouts from external files
 
-from game.entities import *
+from entities import *
 
 M = Objects.MOMO
 W = Objects.WALL

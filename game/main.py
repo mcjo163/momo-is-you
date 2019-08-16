@@ -3,9 +3,9 @@
 
 import pygame
 
-from game.engine import Level
-from game.levels import *
-from game.entities import *
+from engine import Level
+from levels import *
+from entities import *
 
 # UI-Related Constants
 STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT = 800, 600  # starting dimensions of screen (px)
