@@ -35,6 +35,7 @@ class Adjectives(Complements, Enum):
     WIN = auto()
     STOP = auto()
     PUSH = auto()
+    DEFEAT = auto()
 
 
 class Verbs(Text, Enum):

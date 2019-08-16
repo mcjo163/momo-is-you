@@ -161,9 +161,14 @@ class Level:
         for x in range(self.width):
             for y in range(self.height):
                 tile = self.get_tile_at(x, y)
-                if any(self.get_ruling(e, Verbs.IS, Adjectives.YOU) for e in tile):
-                    if any(self.get_ruling(e, Verbs.IS, Adjectives.WIN) for e in tile):
-                        print("\t\tcongrats! you beat the level!")
+                for entity in tile[:]:  # iterate over copy of tile to avoid concurrent modification issues
+
+                    # check for YOU intersections
+                    if self.get_ruling(entity, Verbs.IS, Adjectives.YOU):
+                        if any(self.get_ruling(e, Verbs.IS, Adjectives.WIN) for e in tile):  # YOU/WIN
+                            print("\t\tcongrats! you beat the level!")
+                        if any(self.get_ruling(e, Verbs.IS, Adjectives.DEFEAT) for e in tile):  # YOU/DEFEAT
+                            tile.remove(entity)
 
 
 # --- Helper Functions --- #

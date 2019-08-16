@@ -67,13 +67,18 @@ entity_map = {
         "src_image": None,
         "draw_precedence": 2
     },
+    Adjectives.WIN: {
+        "color": (127, 0, 255),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
     Adjectives.STOP: {
         "color": (127, 0, 127),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     },
-    Adjectives.WIN: {
-        "color": (127, 0, 255),  # TEMPORARY
+    Adjectives.DEFEAT: {
+        "color": (63, 0, 0),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     }
