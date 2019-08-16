@@ -47,6 +47,16 @@ entity_map = {
         "src_image": None,
         "draw_precedence": 2
     },
+    Nouns.WALL: {
+        "color": (127, 127, 0),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Nouns.FLAG: {
+        "color": (127, 127, 127),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
     Verbs.IS: {
         "color": (255, 255, 255),  # TEMPORARY
         "src_image": None,
@@ -54,6 +64,16 @@ entity_map = {
     },
     Adjectives.YOU: {
         "color": (255, 0, 255),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Adjectives.STOP: {
+        "color": (127, 0, 127),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Adjectives.WIN: {
+        "color": (127, 0, 255),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     }

@@ -40,3 +40,11 @@ class Adjectives(Complements, Enum):
 class Verbs(Text, Enum):
     IS = auto()
     HAS = auto()
+
+
+noun_object_map = {
+    Nouns.MOMO: Objects.MOMO,
+    Nouns.WALL: Objects.WALL,
+    Nouns.ROCK: Objects.ROCK,
+    Nouns.FLAG: Objects.FLAG
+}
