@@ -7,7 +7,7 @@ from engine import Level
 from levels import *
 from entities import *
 
-# UI-Related Constants
+# --- UI-Related Constants --- #
 STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT = 800, 600  # starting dimensions of screen (px)
 MIN_SCREEN_WIDTH = 160
 MIN_SCREEN_HEIGHT = 120
@@ -22,9 +22,11 @@ key_map = {
     pygame.K_LEFT: Level.LEFT,
     pygame.K_RIGHT: Level.RIGHT,
     pygame.K_SPACE: Level.WAIT,
-    pygame.K_z: Level.UNDO
+    pygame.K_z: Level.UNDO,
+    pygame.K_r: Level.RESTART
 }
 
+# Maps entities to the resources required for drawing
 entity_map = {
     Objects.MOMO: {
         "color": (255, 0, 0),  # TEMPORARY
@@ -102,11 +104,6 @@ entity_map = {
 }
 
 
-def process_keypress(level, key):
-    if key in key_map.keys():
-        level.process_input(key_map[key])
-
-
 # Assumes given viewport surface has same exact aspect ratio as level.board (only draws squares)
 def draw_level_onto_viewport(viewport, level):
     viewport.fill(VIEWPORT_BACKGROUND_COLOR)
@@ -126,6 +123,7 @@ def draw_level_onto_viewport(viewport, level):
                 viewport.blit(img, loc_px)
 
 
+# Draw the level onto a fresh viewport surface, blit it to the screen, and flip the display
 def update_screen(screen, level, viewport_rect):
     viewport = pygame.Surface((viewport_rect.width, viewport_rect.height))
     draw_level_onto_viewport(viewport, level)
@@ -154,6 +152,7 @@ def get_initialized_screen(screen_width_px, screen_height_px):
     return new_screen
 
 
+# Initializes display, listens for keypress's, calls engine API methods, and handles window re-size events
 def play_level(level):
     # initialize screen
     screen = get_initialized_screen(STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT)
@@ -173,11 +172,9 @@ def play_level(level):
             if event.type == pygame.QUIT:
                 level_alive = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    pass  # TODO: restart level
-                else:
-                    process_keypress(level, event.key)
-                    update_screen(screen, level, viewport_rect)
+                if event.key in key_map.keys():
+                    level.process_input(key_map[event.key])
+                    update_screen(screen, level, viewport_rect)  # TODO: only call this when needed
             elif event.type == pygame.VIDEORESIZE:
                 new_screen_width = max(event.w, MIN_SCREEN_WIDTH)
                 new_screen_height = max(event.h, MIN_SCREEN_HEIGHT)

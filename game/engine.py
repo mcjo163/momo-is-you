@@ -12,6 +12,7 @@ class Level:
     RIGHT = "right"
     WAIT = "wait"
     UNDO = "undo"
+    RESTART = "restart"
 
     # valid rule patterns
     rule_patterns = [[Nouns, Verbs.IS, Complements],
@@ -46,6 +47,11 @@ class Level:
         if key == Level.UNDO:
             if len(self.board_history) > 0:
                 self.board = self.board_history.pop()
+                self.parse_rules_from_board()
+        elif key == Level.RESTART:
+            if len(self.board_history) > 0:
+                self.board = self.board_history[0]
+                self.board_history.clear()
                 self.parse_rules_from_board()
         else:
             self.board_history.append(board_copy(self.board))  # add copy of current board state to history
