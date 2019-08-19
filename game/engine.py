@@ -46,18 +46,21 @@ class Level:
         if key == Level.UNDO:
             if len(self.board_history) > 0:
                 self.board = self.board_history.pop()
-                board_state_changed = True
+                self.parse_rules_from_board()
         else:
-            self.board_history.append(board_copy(self.board))   # add copy of current board state to history
+            self.board_history.append(board_copy(self.board))  # add copy of current board state to history
 
             if key in (Level.UP, Level.DOWN, Level.LEFT, Level.RIGHT):
                 if self.handle_motion(key):
                     board_state_changed = True
-            if self.apply_reactive_rules():
+
+            if self.apply_proactive_rules():
                 board_state_changed = True
 
-        if board_state_changed:  # only re-parse when board state has been changed
-            self.parse_rules_from_board()
+            if board_state_changed:  # only re-parse when board state has been changed
+                self.parse_rules_from_board()
+
+            self.apply_reactive_rules()
 
     def get_tile_at(self, x, y):
         return self.board[y][x]
@@ -145,19 +148,29 @@ class Level:
 
         object_rules[predicate].add(complement)
 
-    # Returns true iff the given rule query is explicitly present in self.rules_dict
-    def get_ruling(self, subject, predicate, complement):
+    # Returns the set of complements currently associated with the given subject/predicate pair;
+    # returns None if pair is not found
+    def get_rule(self, subject, predicate):
         if isinstance(subject, Text):  # ignore text subtype
             subject = Text
 
         if subject not in self.rules_dict.keys():
-            return False
+            return None
         object_rules = self.rules_dict[subject]
 
         if predicate not in object_rules:
+            return None
+
+        return object_rules[predicate]
+
+    # Returns true iff the given rule query is explicitly present in self.rules_dict
+    def get_ruling(self, subject, predicate, complement):
+        rule = self.get_rule(subject, predicate)
+
+        if rule is None:
             return False
 
-        return complement in object_rules[predicate]
+        return complement in rule
 
     # Call add_rule() on all 'implicit' rules
     def add_implicit_rules(self):
@@ -194,7 +207,12 @@ class Level:
 
         print("\t\trules_dict:", self.rules_dict)
 
-    # Applies all 'reactive' rules (i.e. win, sink, move); returns true iff board state is changed
+    # Applies all 'proactive' rules (i.e move); returns true iff board state is changed
+    def apply_proactive_rules(self):
+        print("\tapply_proactive_rules()")
+        return False
+
+    # Applies all 'reactive' rules (i.e. win, sink, defeat); returns true iff board state is changed
     def apply_reactive_rules(self):
         print("\tapply_reactive_rules()")
 
@@ -209,10 +227,19 @@ class Level:
                         if any(self.get_ruling(e, Verbs.IS, Adjectives.WIN) for e in tile):  # YOU/WIN
                             print("\t\tcongrats! you beat the level!")
                         if any(self.get_ruling(e, Verbs.IS, Adjectives.DEFEAT) for e in tile):  # YOU/DEFEAT
-                            tile.remove(entity)
+                            self.destroy_entity(entity, (x, y))
                             board_state_changed = True
 
         return board_state_changed
+
+    def destroy_entity(self, entity, tile_coords):
+        tile = self.get_tile_at(*tile_coords)
+        tile.remove(entity)
+
+        has = self.get_rule(entity, Verbs.HAS)
+        if has is not None:
+            for spawn_entity in has:
+                tile.append(spawn_entity)
 
 
 # --- Helper Functions --- #
