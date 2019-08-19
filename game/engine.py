@@ -35,18 +35,34 @@ class Level:
         self.implicit_rules = [(Text, Verbs.IS, Adjectives.PUSH)]
         self.parse_rules_from_board()
 
+        self.board_history = []
+
     # Primary API method; handles all processing for a given input key
     def process_input(self, key):
         print("\nprocess_input(%s)" % key)
-        if key in (Level.UP, Level.DOWN, Level.LEFT, Level.RIGHT):
-            self.handle_motion(key)
-        self.parse_rules_from_board()  # TODO: only call this when handle_motion actually has an effect
-        self.apply_reactive_rules()
+
+        board_state_changed = False
+
+        if key == Level.UNDO:
+            if len(self.board_history) > 0:
+                self.board = self.board_history.pop()
+                board_state_changed = True
+        else:
+            self.board_history.append(board_copy(self.board))   # add copy of current board state to history
+
+            if key in (Level.UP, Level.DOWN, Level.LEFT, Level.RIGHT):
+                if self.handle_motion(key):
+                    board_state_changed = True
+            if self.apply_reactive_rules():
+                board_state_changed = True
+
+        if board_state_changed:  # only re-parse when board state has been changed
+            self.parse_rules_from_board()
 
     def get_tile_at(self, x, y):
         return self.board[y][x]
 
-    # Handles all level motion; assumes that self.rules_dict is constant
+    # Handles all level motion (assumes that self.rules_dict is constant); returns true iff board state is changed
     def handle_motion(self, direction_key):
         print("\thandle_motion(%s)" % direction_key)
 
@@ -56,11 +72,10 @@ class Level:
                 for entity in self.get_tile_at(x, y):
                     if self.get_ruling(entity, Verbs.IS, Adjectives.YOU):
                         yous.append((entity, (x, y)))
-        # print("\t\tyous:", yous)
 
         if len(yous) == 0:
             print("\t\tyou are nothing!!!")
-            return
+            return False
 
         displacement_vector = {
             Level.UP: (0, -1),
@@ -69,6 +84,7 @@ class Level:
             Level.RIGHT: (1, 0)
         }[direction_key]
 
+        board_state_changed = False
         for you in yous:
             entity, starting_coords = you
             target_coords = vector_sum(starting_coords, displacement_vector)
@@ -89,15 +105,18 @@ class Level:
                         moves.append((e, scanning_coords, vector_sum(scanning_coords, displacement_vector)))
                         contains_pushable = True
 
-                if not contains_pushable:   # empty tile encountered
+                if not contains_pushable:  # empty tile encountered
                     break
 
                 scanning_coords = vector_sum(scanning_coords, displacement_vector)
 
             # move entity
             if not stopped:
+                board_state_changed = True
                 for move in moves:
                     self.move_entity(*move)
+
+        return board_state_changed
 
     def is_in_bounds(self, tile_coords):
         return 0 <= tile_coords[0] < self.width and 0 <= tile_coords[1] < self.height
@@ -175,9 +194,11 @@ class Level:
 
         print("\t\trules_dict:", self.rules_dict)
 
-    # Applies all 'reactive' rules (i.e. win, sink, move)
+    # Applies all 'reactive' rules (i.e. win, sink, move); returns true iff board state is changed
     def apply_reactive_rules(self):
         print("\tapply_reactive_rules()")
+
+        board_state_changed = False
         for x in range(self.width):
             for y in range(self.height):
                 tile = self.get_tile_at(x, y)
@@ -189,6 +210,9 @@ class Level:
                             print("\t\tcongrats! you beat the level!")
                         if any(self.get_ruling(e, Verbs.IS, Adjectives.DEFEAT) for e in tile):  # YOU/DEFEAT
                             tile.remove(entity)
+                            board_state_changed = True
+
+        return board_state_changed
 
 
 # --- Helper Functions --- #
@@ -206,3 +230,13 @@ def get_object_from_noun(noun):
 
 def vector_sum(vector_a, vector_b):
     return tuple(a + b for a, b in zip(vector_a, vector_b))
+
+
+# Returns a deep copy of the given board
+def board_copy(board):
+    return [[tile[:] for tile in row] for row in board]
+
+
+def pprint(board):
+    for row in board:
+        print(" ".join(str(tile) for tile in row))
