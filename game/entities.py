@@ -43,6 +43,7 @@ class Verbs(Text, Enum):
     HAS = auto()
 
 
+# Map from all Nouns to all corresponding Objects
 noun_object_map = {
     Nouns.MOMO: Objects.MOMO,
     Nouns.WALL: Objects.WALL,

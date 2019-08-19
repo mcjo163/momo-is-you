@@ -71,24 +71,44 @@ class Level:
 
         for you in yous:
             entity, starting_coords = you
-            target_coords = (starting_coords[0] + displacement_vector[0], starting_coords[1] + displacement_vector[1])
+            target_coords = vector_sum(starting_coords, displacement_vector)
 
-            # check for out of bounds
-            if not self.is_in_bounds(target_coords):
-                continue
+            # scan in direction of displacement vector for level bounds, STOP Objects, and PUSH Objects
+            moves = [(entity, starting_coords, target_coords)]
+            scanning_coords = target_coords
+            stopped = False
+            while True:
+                if not self.is_walkable(scanning_coords):
+                    stopped = True
+                    break
 
-            # check for moving into STOP
-            if any(self.get_ruling(e, Verbs.IS, Adjectives.STOP) for e in self.get_tile_at(*target_coords)):
-                continue
+                scanning_tile = self.get_tile_at(*scanning_coords)
+                contains_pushable = False
+                for e in scanning_tile:
+                    if self.get_ruling(e, Verbs.IS, Adjectives.PUSH):
+                        moves.append((e, scanning_coords, vector_sum(scanning_coords, displacement_vector)))
+                        contains_pushable = True
 
-            # check for moving into PUSH
-            # TODO
+                if not contains_pushable:   # empty tile encountered
+                    break
+
+                scanning_coords = vector_sum(scanning_coords, displacement_vector)
 
             # move entity
-            self.move_entity(entity, starting_coords, target_coords)
+            if not stopped:
+                for move in moves:
+                    self.move_entity(*move)
 
     def is_in_bounds(self, tile_coords):
         return 0 <= tile_coords[0] < self.width and 0 <= tile_coords[1] < self.height
+
+    # Returns true iff the given coords are in bounds and the corresponding tile does not contain a STOP Object
+    def is_walkable(self, tile_coords):
+        if not self.is_in_bounds(tile_coords):
+            return False
+
+        tile = self.get_tile_at(*tile_coords)
+        return not any(self.get_ruling(e, Verbs.IS, Adjectives.STOP) for e in tile)
 
     def move_entity(self, entity, starting_coords, ending_coords):
         self.get_tile_at(*starting_coords).remove(entity)
@@ -106,7 +126,7 @@ class Level:
 
         object_rules[predicate].add(complement)
 
-    # Returns a ruling (T/F) for the given rule query based on the current state of self.rules_dict
+    # Returns true iff the given rule query is explicitly present in self.rules_dict
     def get_ruling(self, subject, predicate, complement):
         if isinstance(subject, Text):  # ignore text subtype
             subject = Text
@@ -182,3 +202,7 @@ def matches_pattern(pattern, entities):
 # Returns the object corresponding to the given noun
 def get_object_from_noun(noun):
     return noun_object_map[noun]
+
+
+def vector_sum(vector_a, vector_b):
+    return tuple(a + b for a, b in zip(vector_a, vector_b))

@@ -36,6 +36,11 @@ entity_map = {
         "src_image": None,
         "draw_precedence": 0
     },
+    Objects.ROCK: {
+        "color": (160, 82, 45),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 1
+    },
     Objects.FLAG: {
         "color": (255, 255, 0),  # TEMPORARY
         "src_image": None,
@@ -52,16 +57,23 @@ entity_map = {
         "src_image": None,
         "draw_precedence": 2
     },
+    Nouns.ROCK: {
+        "color": (180, 127, 127),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
     Nouns.FLAG: {
         "color": (127, 127, 127),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     },
+
     Verbs.IS: {
         "color": (255, 255, 255),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     },
+
     Adjectives.YOU: {
         "color": (255, 0, 255),  # TEMPORARY
         "src_image": None,
@@ -74,6 +86,11 @@ entity_map = {
     },
     Adjectives.STOP: {
         "color": (127, 0, 127),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Adjectives.PUSH: {
+        "color": (63, 63, 127),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     },
@@ -171,5 +188,5 @@ def play_level(level):
 
 
 if __name__ == "__main__":
-    test_level = Level(test_level_start)
+    test_level = Level(test_level_2_start)
     play_level(test_level)
