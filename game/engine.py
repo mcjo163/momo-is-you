@@ -241,6 +241,7 @@ class Level:
                         if len(tile) > 1:
                             for e in tile[:]:
                                 self.destroy_entity(e, (x, y))
+                            board_state_changed = True
 
         return board_state_changed
 
