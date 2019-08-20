@@ -11,6 +11,7 @@ class Objects(Entities, Enum):
     WALL = auto()
     ROCK = auto()
     FLAG = auto()
+    WATER = auto()
 
 
 # Abstract class encompassing all text elements
@@ -28,6 +29,7 @@ class Nouns(Complements, Enum):
     WALL = auto()
     ROCK = auto()
     FLAG = auto()
+    WATER = auto()
 
 
 class Adjectives(Complements, Enum):
@@ -36,6 +38,7 @@ class Adjectives(Complements, Enum):
     STOP = auto()
     PUSH = auto()
     DEFEAT = auto()
+    SINK = auto()
 
 
 class Verbs(Text, Enum):
@@ -48,5 +51,6 @@ noun_object_map = {
     Nouns.MOMO: Objects.MOMO,
     Nouns.WALL: Objects.WALL,
     Nouns.ROCK: Objects.ROCK,
-    Nouns.FLAG: Objects.FLAG
+    Nouns.FLAG: Objects.FLAG,
+    Nouns.WATER: Objects.WATER
 }

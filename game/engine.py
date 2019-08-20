@@ -216,7 +216,7 @@ class Level:
     # Applies all 'proactive' rules (i.e move); returns true iff board state is changed
     def apply_proactive_rules(self):
         print("\tapply_proactive_rules()")
-        return False
+        return False  # TODO
 
     # Applies all 'reactive' rules (i.e. win, sink, defeat); returns true iff board state is changed
     def apply_reactive_rules(self):
@@ -235,6 +235,12 @@ class Level:
                         if any(self.get_ruling(e, Verbs.IS, Adjectives.DEFEAT) for e in tile):  # YOU/DEFEAT
                             self.destroy_entity(entity, (x, y))
                             board_state_changed = True
+
+                    # check for SINK intersections
+                    if self.get_ruling(entity, Verbs.IS, Adjectives.SINK):
+                        if len(tile) > 1:
+                            for e in tile[:]:
+                                self.destroy_entity(e, (x, y))
 
         return board_state_changed
 

@@ -16,6 +16,9 @@ VIEWPORT_MIN_BUFFER = 50  # minimum viewport edge buffer (px)
 SCREEN_BACKGROUND_COLOR = (30, 30, 30)
 VIEWPORT_BACKGROUND_COLOR = (100, 100, 100)
 
+TARGET_FPS = 60
+INPUT_REPEAT_BUFFER_MS = 120  # time between registered inputs when key is held
+
 key_map = {
     pygame.K_UP: Level.UP,
     pygame.K_DOWN: Level.DOWN,
@@ -48,6 +51,11 @@ entity_map = {
         "src_image": None,
         "draw_precedence": 1
     },
+    Objects.WATER: {
+        "color": (0, 0, 255),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 1
+    },
 
     Nouns.MOMO: {
         "color": (127, 0, 0),  # TEMPORARY
@@ -66,6 +74,11 @@ entity_map = {
     },
     Nouns.FLAG: {
         "color": (127, 127, 127),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Nouns.WATER: {
+        "color": (0, 0, 127),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     },
@@ -98,6 +111,11 @@ entity_map = {
     },
     Adjectives.DEFEAT: {
         "color": (63, 0, 0),  # TEMPORARY
+        "src_image": None,
+        "draw_precedence": 2
+    },
+    Adjectives.SINK: {
+        "color": (63, 53, 0),  # TEMPORARY
         "src_image": None,
         "draw_precedence": 2
     }
@@ -162,19 +180,25 @@ def play_level(level):
     viewport_rect = get_viewport_rect(STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT, level.width, level.height)
     update_screen(screen, level, viewport_rect)
 
+    # initialize keypress vars
+    currently_pressed = None
+    last_input_timestamp = 0  # ms
+
     # main game loop
     clock = pygame.time.Clock()
     level_alive = True
     while level_alive:
-        clock.tick(60)
+        clock.tick(TARGET_FPS)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 level_alive = False
             elif event.type == pygame.KEYDOWN:
                 if event.key in key_map.keys():
-                    level.process_input(key_map[event.key])
-                    update_screen(screen, level, viewport_rect)  # TODO: only call this when needed
+                    currently_pressed = event.key
+            elif event.type == pygame.KEYUP:
+                if event.key == currently_pressed:
+                    currently_pressed = None
             elif event.type == pygame.VIDEORESIZE:
                 new_screen_width = max(event.w, MIN_SCREEN_WIDTH)
                 new_screen_height = max(event.h, MIN_SCREEN_HEIGHT)
@@ -183,7 +207,14 @@ def play_level(level):
                 viewport_rect = get_viewport_rect(new_screen_width, new_screen_height, level.width, level.height)
                 update_screen(screen, level, viewport_rect)
 
+        if currently_pressed is not None:
+            current_timestamp = pygame.time.get_ticks()
+            if current_timestamp - last_input_timestamp > INPUT_REPEAT_BUFFER_MS:
+                last_input_timestamp = current_timestamp
+                level.process_input(key_map[currently_pressed])
+                update_screen(screen, level, viewport_rect)  # TODO: only call this when needed
+
 
 if __name__ == "__main__":
-    test_level = Level(test_level_2_start)
+    test_level = Level(test_level_3_start)
     play_level(test_level)
