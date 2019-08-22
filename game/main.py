@@ -15,8 +15,8 @@ MIN_SCREEN_WIDTH = 160
 MIN_SCREEN_HEIGHT = 120
 VIEWPORT_MIN_PADDING = 50  # minimum viewport edge padding (px)
 
-SCREEN_BACKGROUND_COLOR = (30, 30, 30)
-VIEWPORT_BACKGROUND_COLOR = (100, 100, 100)
+SCREEN_BACKGROUND_COLOR = (25, 25, 32)
+VIEWPORT_BACKGROUND_COLOR = (15, 15, 15)
 
 TARGET_FPS = 60
 INPUT_REPEAT_BUFFER_MS = 120  # time between registered inputs when key is held
@@ -153,7 +153,7 @@ def get_scaled_image(surface, size):
     return pygame.transform.scale(surface, (size, size))
 
 
-# Binary search to find font size with correct height to fill tile with exactly 4 characters
+# Binary search to find font size with correct height to fill tile with 2 chars vertically and 3 horizontally
 @lru_cache(maxsize=20)  # for good measure
 def get_font(name, tile_size_px):
     pygame.font.init()
@@ -161,7 +161,7 @@ def get_font(name, tile_size_px):
     size_lower_bound = 8
     size_upper_bound = 200
 
-    target_size_px = int(tile_size_px * 0.55)
+    target_size_px = int(tile_size_px * 0.58)
 
     size = target_size_px  # initial guess
     while size_upper_bound - size_lower_bound > 1:
@@ -179,24 +179,53 @@ def get_font(name, tile_size_px):
 
 
 text_locations = {
-    2: [(0.35, 0.5), (0.65, 0.5)],
-    3: [(0.2, 0.5), (0.5, 0.5), (0.8, 0.5)],
-    4: [(0.30, 0.25), (0.70, 0.25), (0.30, 0.75), (0.70, 0.75)]
+    1: [(0.5, 0.5)],
+    2: [(0.5, 0.25), (0.5, 0.75)],
+    4: [(0.30, 0.27), (0.70, 0.27), (0.30, 0.73), (0.70, 0.73)]
 }
+
+
+# draws a square with rounded corners onto the given tile Surface
+def draw_text_card_onto_tile(tile, color):
+    tile_size_px = tile.get_width()
+    corner_radius = tile_size_px // 6
+
+    pygame.draw.rect(tile, color, pygame.Rect(0, corner_radius, tile_size_px, tile_size_px - corner_radius * 2))  # hor
+    pygame.draw.rect(tile, color, pygame.Rect(corner_radius, 0, tile_size_px - corner_radius * 2, tile_size_px))  # vert
+
+    pygame.draw.circle(tile, color, (corner_radius, corner_radius), corner_radius)
+    pygame.draw.circle(tile, color, (tile_size_px - corner_radius, corner_radius), corner_radius)
+    pygame.draw.circle(tile, color, (corner_radius, tile_size_px - corner_radius), corner_radius)
+    pygame.draw.circle(tile, color, (tile_size_px - corner_radius, tile_size_px - corner_radius), corner_radius)
 
 
 # Returns surface of size (tile_size_px, tile_size_px); cached for performance
 @lru_cache(maxsize=len(entity_map) * 2)  # for good measure
 def get_entity_image(entity, tile_size_px):
     if entity_map[entity]["src_image_id"] is not None:
+        # get scaled texture
         src_image = src_images[entity_map[entity]["src_image_id"]]
         return get_scaled_image(src_image, tile_size_px)
     else:
+        # render text
         img = pygame.Surface((tile_size_px, tile_size_px), pygame.SRCALPHA)
         if isinstance(entity, Text):
-            font = get_font("consolas", tile_size_px)
+            font = get_font("comicsansms", tile_size_px)
             text_str = entity_map[entity]["text_str"]
-            text_images = [font.render(char, True, entity_map[entity]["text_color"]) for char in text_str[:4]]
+            if len(text_str) < 4:
+                text_substrings = [text_str]  # 1 line
+            elif len(text_str) == 4:
+                text_substrings = [char for char in text_str[:4]]  # 2x2 grid
+            else:
+                text_substrings = [text_str[:3], text_str[3:]]
+
+            if isinstance(entity, Adjectives):
+                draw_text_card_onto_tile(img, entity_map[entity]["text_color"])
+                text_color = VIEWPORT_BACKGROUND_COLOR
+            else:
+                text_color = entity_map[entity]["text_color"]
+
+            text_images = [font.render(substr, True, text_color) for substr in text_substrings]
             locations = text_locations[len(text_images)]
             for text_img, loc in zip(text_images, locations):
                 dest = (
