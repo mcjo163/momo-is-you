@@ -5,7 +5,7 @@ import pygame
 from functools import lru_cache
 
 from engine import Level
-from levels import test_level_1_start, test_level_2_start, test_level_3_start
+from levels import test_level_1_start, test_level_2_start, test_level_3_start, test_level_4_start
 from entities import *
 from assets import src_images
 
@@ -34,22 +34,22 @@ key_map = {
 # Maps entities to the resources required for drawing
 entity_map = {
     Objects.MOMO: {
-        "color": (255, 0, 0),  # TEMPORARY
+        "color": None,
         "src_image_id": "momo_src",
         "draw_precedence": 2
     },
     Objects.WALL: {
-        "color": (0, 255, 255),  # TEMPORARY
+        "color": None,
         "src_image_id": "wall_src",
         "draw_precedence": 0
     },
     Objects.ROCK: {
-        "color": (160, 82, 45),  # TEMPORARY
+        "color": None,
         "src_image_id": "rock_src",
         "draw_precedence": 1
     },
     Objects.FLAG: {
-        "color": (255, 255, 0),  # TEMPORARY
+        "color": None,
         "src_image_id": "flag_src",
         "draw_precedence": 1
     },
@@ -150,7 +150,7 @@ entity_map = {
 
 # Scales given surface to given size and returns results (expensive, results should be cached)
 def get_scaled_image(surface, size):
-    return pygame.transform.scale(surface, (size, size))
+    return pygame.transform.smoothscale(surface, (size, size))
 
 
 # Binary search to find font size with correct height to fill tile with 2 chars vertically and 3 horizontally
@@ -329,7 +329,12 @@ def play_level(level):
                 level.process_input(key_map[currently_pressed])
                 update_screen(screen, level, viewport_rect)  # TODO: only call this when needed
 
+        if level.has_won:
+            print("\nCongrats! You beat the level!")
+            pygame.time.wait(1000)
+            level_alive = False
+
 
 if __name__ == "__main__":
-    test_level = Level(test_level_1_start)
+    test_level = Level(test_level_4_start)
     play_level(test_level)

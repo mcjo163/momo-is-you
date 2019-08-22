@@ -44,3 +44,15 @@ test_level_3_start[5][4] = [Objects.MOMO]
 test_level_3_start[8][4] = [Objects.ROCK]
 for row in test_level_3_start: row[12] = [Objects.WATER]
 test_level_3_start[7][18] = [Objects.FLAG]
+
+test_level_4_start = [
+    [[Nouns.MOMO], [IS], [Adjectives.YOU], [], [], [W], [], [], [], [], []],
+    [[], [], [], [], [], [W], [], [], [], [], []],
+    [[], [], [IS], [], [], [W], [], [], [], [], []],
+    [[], [], [], [], [], [W], [], [], [], [], []],
+    [[], [], [M], [], [], [W], [], [], [F], [], []],
+    [[], [], [], [Nouns.MOMO], [], [W], [], [], [], [], []],
+    [[Nouns.WALL], [], [], [], [], [W], [], [], [], [], []],
+    [[IS], [], [], [], [], [W], [], [], [], [], []],
+    [[Adjectives.STOP], [], [], [], [], [W], [], [], [Nouns.FLAG], [IS], [Adjectives.WIN]]
+]

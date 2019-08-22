@@ -38,6 +38,8 @@ class Level:
 
         self.board_history = []
 
+        self.has_won = False
+
     # Primary API method; handles all processing for a given input key
     def process_input(self, key):
         print("\nprocess_input(%s)" % key)
@@ -213,12 +215,12 @@ class Level:
 
         print("\t\trules_dict:", self.rules_dict)
 
-    # Applies all 'proactive' rules (i.e move); returns true iff board state is changed
+    # Applies all 'proactive' rules (i.e MOVE); returns true iff board state is changed
     def apply_proactive_rules(self):
         print("\tapply_proactive_rules()")
         return False  # TODO
 
-    # Applies all 'reactive' rules (i.e. win, sink, defeat); returns true iff board state is changed
+    # Applies all 'reactive' rules (i.e. WIN, SINK, DEFEAT, Noun IS Noun); returns true iff board state is changed
     def apply_reactive_rules(self):
         print("\tapply_reactive_rules()")
 
@@ -228,13 +230,13 @@ class Level:
                 tile = self.get_tile_at(x, y)
                 for entity in tile[:]:  # iterate over copy of tile to avoid concurrent modification issues
 
-                    # check for YOU intersections
+                    # check for YOU intersections (WIN is checked last)
                     if self.get_ruling(entity, Verbs.IS, Adjectives.YOU):
-                        if any(self.get_ruling(e, Verbs.IS, Adjectives.WIN) for e in tile):  # YOU/WIN
-                            print("\t\tcongrats! you beat the level!")
                         if any(self.get_ruling(e, Verbs.IS, Adjectives.DEFEAT) for e in tile):  # YOU/DEFEAT
                             self.destroy_entity(entity, (x, y))
                             board_state_changed = True
+                        if any(self.get_ruling(e, Verbs.IS, Adjectives.WIN) for e in tile):  # YOU/WIN
+                            self.has_won = True
 
                     # check for SINK intersections
                     if self.get_ruling(entity, Verbs.IS, Adjectives.SINK):
@@ -243,8 +245,17 @@ class Level:
                                 self.destroy_entity(e, (x, y))
                             board_state_changed = True
 
+                    # check for Noun IS Noun
+                    complements = self.get_rule(entity, Verbs.IS)
+                    if complements is not None:
+                        objects = [get_object_from_noun(e) for e in complements if isinstance(e, Nouns)]
+                        if len(objects) > 0:
+                            tile.remove(entity)
+                            tile += objects
+
         return board_state_changed
 
+    # destroys one entity at given coords and spawns all HAS entities
     def destroy_entity(self, entity, tile_coords):
         tile = self.get_tile_at(*tile_coords)
         tile.remove(entity)
