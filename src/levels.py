@@ -51,9 +51,9 @@ def read_level_start(filename):
 
 
 # --- Load All Levels --- #
-levels_dir = "levels"
+levels_dirname = os.path.join(os.path.dirname(__file__), "levels")
 filenames = ["level_1"]
-level_starts = [read_level_start(os.path.join(levels_dir, filename)) for filename in filenames]
+level_starts = [read_level_start(os.path.join(levels_dirname, filename)) for filename in filenames]
 
 # M = Objects.MOMO
 # W = Objects.WALL
