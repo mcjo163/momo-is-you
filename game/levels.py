@@ -1,27 +1,36 @@
 # Level board starting states
 # TODO: read these layouts from external files
 
+import os
+
 from entities import *
 
-# Map from file key-strings to entities; key-strings must be 2 chars long and should be human-readable
+# Map from file key-strings to entities
+# key-strings must be < 5 chars long and should be human-readable; asterisk indicates object
 keystr_entity_map = {
-    " ": None,
+    "": None,
 
-    "MO": Objects.MOMO,
-    "WA": Objects.WALL,
-    "RO": Objects.ROCK,
-    "FL": Objects.FLAG,
-    "WR": Objects.WATER,
+    "MOM*": Objects.MOMO,
+    "WAL*": Objects.WALL,
+    "ROC*": Objects.ROCK,
+    "FLA*": Objects.FLAG,
+    "WAT*": Objects.WATER,
+
+    "MOMO": Nouns.MOMO,
+    "WALL": Nouns.WALL,
+    "ROCK": Nouns.ROCK,
+    "FLAG": Nouns.FLAG,
+    "WATE": Nouns.WATER,
 
     "IS": Verbs.IS,
-    "HA": Verbs.HAS,
+    "HAS": Verbs.HAS,
 
-    "YO": Adjectives.YOU,
-    "WI": Adjectives.WIN,
-    "ST": Adjectives.STOP,
-    "PU": Adjectives.PUSH,
-    "DE": Adjectives.DEFEAT,
-    "SI": Adjectives.SINK
+    "YOU": Adjectives.YOU,
+    "WIN": Adjectives.WIN,
+    "STOP": Adjectives.STOP,
+    "PUSH": Adjectives.PUSH,
+    "DEFE": Adjectives.DEFEAT,
+    "SINK": Adjectives.SINK,
 }
 
 
@@ -30,17 +39,21 @@ def read_level_start(filename):
     with open(filename) as file:
         for line in file.readlines():
             row = []
-            for tile in line.split(","):
-                keystrs = [tile[i * 2:(i + 1) * 2] for i in range(len(tile) // 2)]
-                row.append([keystr_entity_map[keystr] for keystr in keystrs])
+            for tile in line.rstrip().split(";"):
+                if len(tile) == 0:
+                    row.append([])
+                else:
+                    keystrs = tile.split(",")
+                    row.append([keystr_entity_map[keystr] for keystr in keystrs])
             level_start.append(row)
 
     return level_start
 
 
 # --- Load All Levels --- #
-filenames = []
-level_starts = [read_level_start(filename) for filename in filenames]
+levels_dir = "levels"
+filenames = ["level_1"]
+level_starts = [read_level_start(os.path.join(levels_dir, filename)) for filename in filenames]
 
 # M = Objects.MOMO
 # W = Objects.WALL
