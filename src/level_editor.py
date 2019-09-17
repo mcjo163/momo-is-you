@@ -26,13 +26,13 @@ def update_screen(screen, board, viewport_rect):
 
 
 # Size the viewport to both preserve level.board's aspect ratio and respect VIEWPORT_MIN_PADDING
-def get_viewport_rect(screen_width_px, screen_height_px, level_width_tiles, level_height_tiles):
-    width_ratio = (screen_width_px - VIEWPORT_MIN_PADDING * 2) // level_width_tiles
-    height_ratio = (screen_height_px - VIEWPORT_MIN_PADDING * 2) // level_height_tiles
+def get_viewport_rect(screen_width_px, screen_height_px, board_width_tiles, board_height_tiles):
+    width_ratio = (screen_width_px - VIEWPORT_MIN_PADDING * 2) // board_width_tiles
+    height_ratio = (screen_height_px - VIEWPORT_MIN_PADDING * 2) // board_height_tiles
     pixels_per_tile = min(width_ratio, height_ratio)
 
-    viewport_width = level_width_tiles * pixels_per_tile
-    viewport_height = level_height_tiles * pixels_per_tile
+    viewport_width = board_width_tiles * pixels_per_tile
+    viewport_height = board_height_tiles * pixels_per_tile
 
     return pygame.Rect(
         ((screen_width_px - viewport_width) // 2, (screen_height_px - viewport_height) // 2),  # centered in screen
@@ -46,6 +46,22 @@ def get_initialized_screen(screen_width_px, screen_height_px):
     return new_screen
 
 
+# Takes a screen location in pixels and returns the corresponding board location
+def pixels_to_tiles(x_px, y_px, viewport_rect, board_width_tiles, board_height_tiles):
+    x_px -= viewport_rect.left
+    y_px -= viewport_rect.top
+
+    x_tiles = int(float(x_px) / viewport_rect.width * board_width_tiles)
+    y_tiles = int(float(y_px) / viewport_rect.height * board_height_tiles)
+
+    return x_tiles, y_tiles
+
+
+
+def perform_click(pos_px, viewport_rect, board_dims, selected):
+    pass
+
+
 # Initializes display, listens for keypress's, and handles window re-size events
 def run_editor(board=None):
     # initialize screen; VIDEORESIZE event is generated immediately
@@ -55,6 +71,8 @@ def run_editor(board=None):
         board = [[[] for _ in range(21)] for _ in range(15)]
 
     board_width, board_height = len(board[0]), len(board)
+
+    selected_entity = None
 
     # main game loop
     clock = pygame.time.Clock()
@@ -72,6 +90,13 @@ def run_editor(board=None):
                 pygame.display.update()
                 viewport_rect = get_viewport_rect(new_screen_width, new_screen_height, board_width, board_height)
                 update_screen(screen, board, viewport_rect)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    x_tiles, y_tiles = pixels_to_tiles(*event.pos, viewport_rect, board_width, board_height)
+                    print("CLICK:\t", tile_coords)
+                    clicked_tile = board[y_tiles][x_tiles]
+                    if len(clicked_tile) > 0:
+                        selected_entity
 
 
 if __name__ == "__main__":
