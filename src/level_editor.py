@@ -1,5 +1,7 @@
 # Standalone GUI Applet for creating levels
 
+import pygame
+
 from ui_helpers import *
 from levels import level_starts, keystr_entity_map
 
@@ -93,7 +95,7 @@ def run_editor(board=None):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     x_tiles, y_tiles = pixels_to_tiles(*event.pos, viewport_rect, board_width, board_height)
-                    print("CLICK:\t", tile_coords)
+                    print("CLICK:\t", (x_tiles, y_tiles))
                     clicked_tile = board[y_tiles][x_tiles]
                     if len(clicked_tile) > 0:
                         selected_entity
