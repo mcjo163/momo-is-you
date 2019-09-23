@@ -3,7 +3,7 @@
 import pygame
 
 from ui_helpers import *
-from levels import level_starts, keystr_entity_map
+from levels import level_starts, write_level_start
 
 
 # --- UI-Related Constants --- #
@@ -98,7 +98,10 @@ def run_editor(board=None):
                     print("CLICK:\t", (x_tiles, y_tiles))
                     clicked_tile = board[y_tiles][x_tiles]
                     if len(clicked_tile) > 0:
-                        selected_entity
+                        pass # selected_entity
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    write_level_start("test_output.lvl", board)
 
 
 if __name__ == "__main__":

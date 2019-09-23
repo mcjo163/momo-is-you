@@ -1,5 +1,5 @@
 # Level board starting states
-# TODO: read these layouts from external files
+# starting states can only contain one entity per tile
 
 import os
 
@@ -7,8 +7,8 @@ from entities import *
 
 # Map from file key-strings to entities
 # key-strings must be < 5 chars long and should be human-readable; asterisk indicates object
-keystr_entity_map = {
-    "": None,
+KEYSTR_ENTITY_MAP = {
+    "_": None,
 
     "MOM*": Objects.MOMO,
     "WAL*": Objects.WALL,
@@ -33,24 +33,34 @@ keystr_entity_map = {
     "SINK": Adjectives.SINK,
 }
 
+ENTITY_KEYSTR_MAP = {entity: keystr for keystr, entity in KEYSTR_ENTITY_MAP.items()}
+
+TILE_DELIMITER = ";"
+
 
 def read_level_start(filename):
     level_start = []
-    with open(filename) as file:
+    with open(filename, "r") as file:
         for line in file.readlines():
             row = []
-            for tile in line.rstrip().split(";"):
-                if len(tile) == 0:
-                    row.append([])
-                else:
-                    keystrs = tile.split(",")
-                    row.append([keystr_entity_map[keystr] for keystr in keystrs])
+            for keystr in line.rstrip().split(TILE_DELIMITER):
+                print("keystr:", keystr)
+                entity = KEYSTR_ENTITY_MAP[keystr]
+                row.append([] if entity is None else [entity])
             level_start.append(row)
 
     return level_start
 
 
-# --- Load All Levels --- #
+def write_level_start(filename, board):
+    with open(filename, "w+") as file:
+        for row in board:
+            row_entities = [None if len(tile) == 0 else tile[0] for tile in row]  # flatten row
+            line = TILE_DELIMITER.join(ENTITY_KEYSTR_MAP[entity] for entity in row_entities)
+            file.write(line + "\n")
+
+
+# --- Load All Levels --- # TODO: move this out of levels.py
 levels_dirname = os.path.join(os.path.dirname(__file__), "levels")
 filenames = ["level_1"]
 level_starts = [read_level_start(os.path.join(levels_dirname, filename)) for filename in filenames]
