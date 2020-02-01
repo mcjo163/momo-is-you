@@ -215,7 +215,7 @@ class Level:
 
         print("\t\trules_dict:", self.rules_dict)
 
-    # Applies all 'proactive' rules (i.e MOVE); returns true iff board state is changed
+    # Applies all 'proactive' rules (i.e MOVE, MAKE(?)); returns true iff board state is changed
     def apply_proactive_rules(self):
         print("\tapply_proactive_rules()")
         return False  # TODO

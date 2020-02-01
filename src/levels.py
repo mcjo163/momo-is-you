@@ -107,3 +107,5 @@ level_starts = [read_level_start(os.path.join(levels_dirname, filename)) for fil
 #     [[IS], [], [], [], [], [W], [], [], [], [], []],
 #     [[Adjectives.STOP], [], [], [], [], [W], [], [], [Nouns.FLAG], [IS], [Adjectives.WIN]]
 # ]
+#
+# level_starts = [test_level_1_start, test_level_2_start, test_level_3_start, test_level_4_start]
