@@ -18,12 +18,25 @@ GRID_COLOR = (0, 80, 90, 127)
 
 TARGET_FPS = 60
 
+# Draw the level onto a fresh viewport surface, render UI elements, blit them to the screen, and flip the display
+# only re-draws the board layer if corresponding flag is set; otherwise, cached surface is used
+def update_screen(screen, board, viewport_rect, redraw_board=True, selected_entity=None, cursor_position=None):
+    global board_layer_cache
+    if redraw_board or board_layer_cache is None:
+        board_layer = pygame.Surface((viewport_rect.width, viewport_rect.height))
+        draw_board_onto_viewport(board_layer, board, VIEWPORT_BACKGROUND_COLOR, GRID_COLOR)
+        board_layer_cache = board_layer.copy()
+    else:
+        board_layer = board_layer_cache
+    screen.blit(board_layer, viewport_rect)
 
-# Draw the level onto a fresh viewport surface, render UI elements, blit it to the screen, and flip the display
-def update_screen(screen, board, viewport_rect):
-    viewport = pygame.Surface((viewport_rect.width, viewport_rect.height))
-    draw_board_onto_viewport(viewport, board, VIEWPORT_BACKGROUND_COLOR, GRID_COLOR)
-    screen.blit(viewport, viewport_rect)
+    if selected_entity and cursor_position:
+        board_width, board_height = len(board[0]), len(board)
+        tile_size_px = min(viewport_rect.width // board_width, viewport_rect.height // board_height)
+        img = get_entity_image(selected_entity, tile_size_px, VIEWPORT_BACKGROUND_COLOR)
+        draw_pos = (cursor_position[0] - tile_size_px // 2, cursor_position[1] - tile_size_px // 2)
+        screen.blit(img, draw_pos)
+
     pygame.display.update(viewport_rect)
 
 
@@ -68,6 +81,7 @@ def perform_click(pos_px, viewport_rect, board_dims, selected):
 def run_editor(board=None):
     # initialize screen; VIDEORESIZE event is generated immediately
     screen = get_initialized_screen(STARTING_SCREEN_WIDTH, STARTING_SCREEN_HEIGHT)
+    board_layer_cache = None
 
     if board is None:
         board = [[[] for _ in range(21)] for _ in range(15)]
@@ -82,9 +96,11 @@ def run_editor(board=None):
     while editor_alive:
         clock.tick(TARGET_FPS)
 
+        # process input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 editor_alive = False
+            
             elif event.type == pygame.VIDEORESIZE:
                 new_screen_width = max(event.w, MIN_SCREEN_WIDTH)
                 new_screen_height = max(event.h, MIN_SCREEN_HEIGHT)
@@ -92,16 +108,34 @@ def run_editor(board=None):
                 pygame.display.update()
                 viewport_rect = get_viewport_rect(new_screen_width, new_screen_height, board_width, board_height)
                 update_screen(screen, board, viewport_rect)
+            
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     x_tiles, y_tiles = pixels_to_tiles(*event.pos, viewport_rect, board_width, board_height)
                     print("CLICK:\t", (x_tiles, y_tiles))
                     clicked_tile = board[y_tiles][x_tiles]
-                    if len(clicked_tile) > 0:
-                        pass # selected_entity
+                    if selected_entity is None:
+                        # select an entity and redraw
+                        if len(clicked_tile) > 0:
+                            selected_entity = clicked_tile.pop()   # arbitrarily choose (and remove) last entity
+                            update_screen(screen, board, viewport_rect, redraw_board=True, selected_entity=selected_entity, cursor_position=event.pos)
+
+                    else:
+                        # deselect the entity and redraw
+                        clicked_tile.append(selected_entity)
+                        selected_entity = None
+                        update_screen(screen, board, viewport_rect)
+            
+            elif event.type == pygame.MOUSEMOTION:
+                if selected_entity:
+                    update_screen(screen, board, viewport_rect, redraw_board=False, selected_entity=selected_entity, cursor_position=event.pos)
+                    # print(event.pos)
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
                     write_level_start("test_output.lvl", board)
+                    print("level saved!")
+        
 
 
 if __name__ == "__main__":
